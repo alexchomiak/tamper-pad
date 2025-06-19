@@ -13,8 +13,8 @@ const theme = extendTheme({
 
 export const App: React.FC = () => {
   const chakraStylesPresent = !!document.querySelector('style[data-emotion]');
-  const isChatGPT = window.location.hostname.includes('chat.openai.com') || window.location.hostname.includes("chatgpt.com")
-  if(chakraStylesPresent || isChatGPT) {
+  const isDenyListed = window.location.hostname.includes('chat.openai.com') || window.location.hostname.includes("chatgpt.com") || window.location.hostname.includes("github.com")
+  if(chakraStylesPresent || isDenyListed) {
     return (
         <MacroProvider>
           <MacroPrompt />

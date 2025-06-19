@@ -42907,8 +42907,8 @@
 	});
 	const App = () => {
 	    const chakraStylesPresent = !!document.querySelector('style[data-emotion]');
-	    const isChatGPT = window.location.hostname.includes('chat.openai.com') || window.location.hostname.includes("chatgpt.com");
-	    if (chakraStylesPresent || isChatGPT) {
+	    const isDenyListed = window.location.hostname.includes('chat.openai.com') || window.location.hostname.includes("chatgpt.com") || window.location.hostname.includes("github.com");
+	    if (chakraStylesPresent || isDenyListed) {
 	        return (jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }));
 	    }
 	    return (jsxRuntimeExports.jsx(ChakraProvider, { theme: theme, children: jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }) }));
