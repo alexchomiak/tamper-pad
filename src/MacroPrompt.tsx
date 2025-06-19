@@ -138,10 +138,13 @@ export const MacroPrompt: React.FC = () => {
             boxShadow="lg"
           >
             <HStack spacing={3}>
+            <Box fontSize="xl" color="yellow.400" as="span" role="img" aria-label="bolt">
+  ⚡️
+</Box>
               <Input
                 placeholder="Type a macro..."
                 size="lg"
-                width="400px"
+                width="60vw"
                 value={input}
                 ref={inputRef}
                 onChange={e => setInput(e.target.value)}

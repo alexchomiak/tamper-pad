@@ -42891,7 +42891,7 @@
 	        setVisible(false);
 	        onSettingsOpen();
 	    };
-	    return (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [isAddOpen && jsxRuntimeExports.jsx(AddMacroModal, { onClose: onAddClose, onMacroAdded: () => setVisible(false) }), isSettingsOpen && jsxRuntimeExports.jsx(SettingsModal, { onClose: onSettingsClose }), visible && (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [jsxRuntimeExports.jsx(Box, { position: "fixed", top: "0", left: "0", width: "150vw", height: "100vh", bg: "blackAlpha.500", zIndex: 1200, pointerEvents: "none", padding: "3rem" }), jsxRuntimeExports.jsx(Box, { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 1300, bg: "white", p: 4, borderRadius: "lg", boxShadow: "lg", children: jsxRuntimeExports.jsxs(HStack, { spacing: 3, children: [jsxRuntimeExports.jsx(Input, { placeholder: "Type a macro...", size: "lg", width: "400px", value: input, ref: inputRef, onChange: e => setInput(e.target.value), onKeyDown: e => {
+	    return (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [isAddOpen && jsxRuntimeExports.jsx(AddMacroModal, { onClose: onAddClose, onMacroAdded: () => setVisible(false) }), isSettingsOpen && jsxRuntimeExports.jsx(SettingsModal, { onClose: onSettingsClose }), visible && (jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [jsxRuntimeExports.jsx(Box, { position: "fixed", top: "0", left: "0", width: "150vw", height: "100vh", bg: "blackAlpha.500", zIndex: 1200, pointerEvents: "none", padding: "3rem" }), jsxRuntimeExports.jsx(Box, { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 1300, bg: "white", p: 4, borderRadius: "lg", boxShadow: "lg", children: jsxRuntimeExports.jsxs(HStack, { spacing: 3, children: [jsxRuntimeExports.jsx(Box, { fontSize: "xl", color: "yellow.400", as: "span", role: "img", "aria-label": "bolt", children: "\u26A1\uFE0F" }), jsxRuntimeExports.jsx(Input, { placeholder: "Type a macro...", size: "lg", width: "60vw", value: input, ref: inputRef, onChange: e => setInput(e.target.value), onKeyDown: e => {
 	                                        if (e.key === 'Enter')
 	                                            runMacro(input.trim());
 	                                        if (e.key === 'Escape')
@@ -42911,7 +42911,7 @@
 	    if (chakraStylesPresent || isChatGPT) {
 	        return (jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }));
 	    }
-	    return (jsxRuntimeExports.jsx(ChakraProvider, { theme: theme, resetCSS: false, children: jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }) }));
+	    return (jsxRuntimeExports.jsx(ChakraProvider, { theme: theme, children: jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }) }));
 	};
 
 	(function runDeferredMacros() {
