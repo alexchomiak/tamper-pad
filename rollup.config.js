@@ -3,6 +3,7 @@ const replace = require('@rollup/plugin-replace');
 const banner2 = require('rollup-plugin-banner2');
 const commonjs = require('@rollup/plugin-commonjs');
 const resolve = require('@rollup/plugin-node-resolve');
+const terser = require('@rollup/plugin-terser')
 const fs = require('fs');
 
 module.exports = {
@@ -20,6 +21,7 @@ module.exports = {
     resolve({ browser: true }),
     commonjs(),
     typescript({ tsconfig: './tsconfig.json' }),
+    terser(),
     banner2(() => fs.readFileSync('public/banner.user.js', 'utf8')),
   ],
   onwarn(warning, warn) {

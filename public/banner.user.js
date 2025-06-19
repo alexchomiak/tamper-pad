@@ -10,3 +10,14 @@
 // @grant        GM_addElement
 // ==/UserScript==
 
+//      __//
+//     /.__.\
+//     \ \/ /
+//  '__/    \
+//   \-      )
+//    \_____/
+// _____|_|____
+//      " "
+// Tamper Pad is created by @alexchomiak
+// https://github.com/alexchomiak
+
