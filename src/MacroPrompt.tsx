@@ -116,10 +116,12 @@ export const MacroPrompt: React.FC = () => {
       <AnimatePresence>
         {visible && (
           <>
-            <Box
+            <MotionBox
               position="fixed"
-              top="0"
-              left="0"
+              initial={{ opacity: 0, left: "0%", top: "0%"}}
+              animate={{ opacity: 1, left: "0%", top: "0%"}}
+              exit={{ opacity: 0, left: "0%", top: "0%"}}
+              transition={{ duration: 0.2 }}
               width="150vw"
               height="100vh"
               bg="blackAlpha.500"
