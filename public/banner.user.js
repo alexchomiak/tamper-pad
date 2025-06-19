@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         React Macro Launcher
+// @name         Tamper Pad
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  A configurable macro launcher with React UI

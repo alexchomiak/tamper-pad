@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         React Macro Launcher
+// @name         Tamper Pad
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  A configurable macro launcher with React UI
@@ -24962,7 +24962,7 @@
 	  initialColorMode: "light",
 	  cssVarPrefix: "chakra"
 	};
-	const theme = {
+	const theme$1 = {
 	  semanticTokens,
 	  direction,
 	  ...foundations,
@@ -38331,7 +38331,7 @@
 	  };
 	};
 
-	const ChakraProvider = createProvider(theme);
+	const ChakraProvider = createProvider(theme$1);
 
 	const TRANSITION_EASINGS = {
 	  easeIn: [0.4, 0, 1, 1],
@@ -38775,7 +38775,7 @@
 	    )(activeTheme);
 	  };
 	};
-	const extendTheme = createExtendTheme(theme);
+	const extendTheme = createExtendTheme(theme$1);
 	function mergeThemeOverride(...overrides) {
 	  return mergeWith({}, ...overrides, mergeThemeCustomizer);
 	}
@@ -42832,8 +42832,16 @@
 	        var _a;
 	        const [name, ...args] = input.split(' ');
 	        const macro = macros.find(m => m.name === name);
-	        if (!macro)
-	            return alert(`Macro "${name}" not found.`);
+	        if (!macro) {
+	            toast({
+	                title: 'Macro not found',
+	                description: `The macro ${name} does not exist!`,
+	                duration: 3000,
+	                isClosable: true,
+	                status: "error"
+	            });
+	            return;
+	        }
 	        try {
 	            if (macro.type === 'script') {
 	                new Function(macro.code)();
@@ -42845,18 +42853,12 @@
 	                    window.location.href = finalUrl;
 	            }
 	            else if (macro.type == "internal") {
-	                if (macro.name == "@clearQueue") {
-	                    GM_setValue('__deferred_macro_exec__', '[]');
-	                    toast({
-	                        title: 'Cleared Queue.',
-	                        description: 'Deferred Macro Execution Cleared',
-	                        duration: 3000,
-	                        isClosable: true,
-	                    });
-	                }
+	                // * internal scripts
 	            }
 	            else if (macro.type === 'deferred-script') {
-	                const current = GM_getValue('__deferred_macro_exec__', '[]');
+	                //@ts-ignore
+	                const k = `exec__${getHostnameFromUrl(macro.origin)}`;
+	                const current = GM_getValue(k, '[]');
 	                let queue = [];
 	                try {
 	                    queue = JSON.parse(current);
@@ -42870,7 +42872,7 @@
 	                    code: macro.code,
 	                    args: args.join(' ')
 	                });
-	                GM_setValue('__deferred_macro_exec__', JSON.stringify(queue));
+	                GM_setValue(k, JSON.stringify(queue));
 	                //@ts-ignore
 	                window.location.href = macro.origin;
 	            }
@@ -42898,7 +42900,7 @@
 	};
 
 	// Custom Chakra theme with unique CSS var prefix
-	extendTheme({
+	const theme = extendTheme({
 	    config: {
 	        cssVarPrefix: 'macro', // Avoids collision with host page's chakra
 	    },
@@ -42909,11 +42911,13 @@
 	    if (chakraStylesPresent || isChatGPT) {
 	        return (jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }));
 	    }
-	    return (jsxRuntimeExports.jsx(ChakraProvider, { resetCSS: false, children: jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }) }));
+	    return (jsxRuntimeExports.jsx(ChakraProvider, { theme: theme, resetCSS: false, children: jsxRuntimeExports.jsx(MacroProvider, { children: jsxRuntimeExports.jsx(MacroPrompt, {}) }) }));
 	};
 
 	(function runDeferredMacros() {
-	    const raw = GM_getValue('__deferred_macro_exec__', '[]');
+	    const location = window.location.href;
+	    const k = `exec__${getHostnameFromUrl(location)}`;
+	    const raw = GM_getValue(k, '[]');
 	    let pending = [];
 	    try {
 	        pending = JSON.parse(raw);
@@ -42921,9 +42925,9 @@
 	    catch (e) {
 	        console.warn('[Macro] Failed to parse deferred macro storage:', e);
 	    }
-	    const location = window.location.href;
+	    const remaining = [];
 	    for (const p of pending) {
-	        if (getHostnameFromUrl(location) == p.origin) {
+	        if (getHostnameFromUrl(location) == getHostnameFromUrl(p.origin)) {
 	            try {
 	                GM_addElement('script', {
 	                    textContent: `
@@ -42941,8 +42945,11 @@
 	                alert('[Macro] Deferred macro error: ' + err.message);
 	            }
 	        }
+	        else {
+	            remaining.push(p);
+	        }
 	    }
-	    GM_setValue('__deferred_macro_exec__', '[]');
+	    GM_setValue(k, JSON.stringify(remaining));
 	})();
 	const container = document.createElement('div');
 	document.body.appendChild(container);

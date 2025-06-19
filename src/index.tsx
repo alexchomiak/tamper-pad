@@ -5,7 +5,9 @@ import { getHostnameFromUrl } from './util';
 
 
 (function runDeferredMacros() {
-    const raw = GM_getValue('__deferred_macro_exec__', '[]');
+    const location = window.location.href;
+	const k = `exec__${getHostnameFromUrl(location)}`
+    const raw = GM_getValue(k, '[]')
     let pending: any[] = [];
 
     try {
@@ -14,10 +16,10 @@ import { getHostnameFromUrl } from './util';
         console.warn('[Macro] Failed to parse deferred macro storage:', e);
     }
 
-    const location = window.location.href
 
+    const remaining = []
     for (const p of pending) {
-        if (getHostnameFromUrl(location) == p.origin) {
+        if (getHostnameFromUrl(location) == getHostnameFromUrl(p.origin)) {
             try {
                 GM_addElement('script', {
                     textContent: `
@@ -33,10 +35,12 @@ import { getHostnameFromUrl } from './util';
                 //@ts-ignore
                 alert('[Macro] Deferred macro error: ' + err.message);
             }
+        } else {
+            remaining.push(p)
         }
     }
 
-    GM_setValue('__deferred_macro_exec__', '[]');
+    GM_setValue(k, JSON.stringify(remaining));
 })();
 
 const container = document.createElement('div');

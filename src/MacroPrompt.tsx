@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useMacros } from './MacroContext';
 import { AddMacroModal } from './AddMacroModal';
 import { SettingsModal } from './SettingsModal';
+import { getHostnameFromUrl } from './util';
 
 export const MacroPrompt: React.FC = () => {
   const { macros } = useMacros();
@@ -44,7 +45,16 @@ export const MacroPrompt: React.FC = () => {
   const runMacro = (input: string) => {
     const [name, ...args] = input.split(' ');
     const macro = macros.find(m => m.name === name);
-    if (!macro) return alert(`Macro "${name}" not found.`);
+    if (!macro) {
+      toast({
+            title: 'Macro not found',
+            description: `The macro ${name} does not exist!`,
+            duration: 3000,
+            isClosable: true,
+            status: "error"
+      })
+      return
+    }
   
     try {
       if (macro.type === 'script') {
@@ -55,18 +65,12 @@ export const MacroPrompt: React.FC = () => {
         if (finalUrl) window.location.href = finalUrl;
       } 
       else if (macro.type == "internal") {
-        if(macro.name == "@clearQueue") {
-           GM_setValue('__deferred_macro_exec__', '[]')
-           toast({
-            title: 'Cleared Queue.',
-            description: 'Deferred Macro Execution Cleared',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
+        // * internal scripts
       }
       else if (macro.type === 'deferred-script') {
-        const current = GM_getValue('__deferred_macro_exec__', '[]');
+        //@ts-ignore
+        const k = `exec__${getHostnameFromUrl(macro.origin)}`
+        const current = GM_getValue(k, '[]');
         let queue: any[] = [];
   
         try {
@@ -82,7 +86,7 @@ export const MacroPrompt: React.FC = () => {
           args: args.join(' ')
         });
   
-        GM_setValue('__deferred_macro_exec__', JSON.stringify(queue));
+        GM_setValue(k, JSON.stringify(queue));
         //@ts-ignore
         window.location.href = macro.origin;
       }

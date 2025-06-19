@@ -23,7 +23,7 @@ export const App: React.FC = () => {
   }
 
   return (
-      <ChakraProvider resetCSS={false}>
+      <ChakraProvider theme={theme} resetCSS={false}>
         <MacroProvider>
           <MacroPrompt />
         </MacroProvider>
