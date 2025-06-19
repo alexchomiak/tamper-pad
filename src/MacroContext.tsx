@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Macro = { name: string; code: string };
+export type Macro = {
+  name: string;
+  type: 'script' | 'url' | 'deferred-script' | 'internal';
+  code?: string;         // used for 'script' macros
+  url?: string;         // used for 'url' macros
+};
 
 const MACRO_KEY = 'macros';
 
@@ -32,7 +37,22 @@ const MacroContext = createContext<{
 export const useMacros = () => useContext(MacroContext);
 
 export const MacroProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [macros, setMacros] = useState<Macro[]>(loadMacros());
+  const [macros, setMacros] = useState<Macro[]>([]);
+
+  useEffect(() => {
+    const current = loadMacros();
+
+    const hasRefresh = current.some(m => m.name === '@clearQueue');
+    if (!hasRefresh) {
+      current.push({
+        name: '@clearQueue',
+        type: 'internal'
+      });
+      saveMacros(current);
+    }
+
+    setMacros(current);
+  }, []);
 
   const addMacro = (macro: Macro) => {
     const updated = [...macros.filter(m => m.name !== macro.name), macro];

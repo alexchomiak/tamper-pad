@@ -1,93 +1,171 @@
-import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Input,
+  HStack,
+  IconButton,
+  useDisclosure,
+  useToast,
+} from '@chakra-ui/react';
+import { AddIcon, SettingsIcon } from '@chakra-ui/icons';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMacros } from './MacroContext';
 import { AddMacroModal } from './AddMacroModal';
+import { SettingsModal } from './SettingsModal';
 
 export const MacroPrompt: React.FC = () => {
   const { macros } = useMacros();
-  const [visible, setVisible] = useState(false);
   const [input, setInput] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure();
+  const { isOpen: isSettingsOpen, onOpen: onSettingsOpen, onClose: onSettingsClose } = useDisclosure();
+  const toast = useToast();
 
-  // Toggle prompt visibility on CTRL + .
+  const inputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    if (visible && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === '.') {
         e.preventDefault();
-        setVisible(prev => !prev);
-        setShowModal(false); // ensure modal is closed when prompt toggled
+        setVisible(v => !v);
+        onAddClose();
+        onSettingsClose();
       }
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onAddClose, onSettingsClose]);
 
-  // Run macro
-  const runMacro = (name: string) => {
+  const runMacro = (input: string) => {
+    const [name, ...args] = input.split(' ');
     const macro = macros.find(m => m.name === name);
     if (!macro) return alert(`Macro "${name}" not found.`);
+  
     try {
-      new Function(macro.code)();
+      if (macro.type === 'script') {
+        new Function(macro.code!)();
+      } else if (macro.type === 'url') {
+        const query = encodeURIComponent(args.join(' '));
+        const finalUrl = macro.url?.replace(/%s/g, query);
+        if (finalUrl) window.location.href = finalUrl;
+      } 
+      else if (macro.type == "internal") {
+        if(macro.name == "@clearQueue") {
+           GM_setValue('__deferred_macro_exec__', '[]')
+           toast({
+            title: 'Cleared Queue.',
+            description: 'Deferred Macro Execution Cleared',
+            duration: 3000,
+            isClosable: true,
+          });
+        }
+      }
+      else if (macro.type === 'deferred-script') {
+        const current = GM_getValue('__deferred_macro_exec__', '[]');
+        let queue: any[] = [];
+  
+        try {
+          queue = JSON.parse(current);
+        } catch (e) {
+          console.warn('[Macro] Could not parse deferred queue:', e);
+        }
+  
+        queue.push({
+          //@ts-ignore
+          origin: macro.origin,
+          code: macro.code,
+          args: args.join(' ')
+        });
+  
+        GM_setValue('__deferred_macro_exec__', JSON.stringify(queue));
+        //@ts-ignore
+        window.location.href = macro.origin;
+      }
     } catch (err) {
       alert(`Error: ${err}`);
     }
+  
     setInput('');
     setVisible(false);
   };
 
-  if (!visible) return null;
+  const handleAddClick = () => {
+    setVisible(false);
+    onAddOpen();
+  };
+
+  const handleSettingsClick = () => {
+    setVisible(false);
+    onSettingsOpen();
+  };
 
   return (
     <>
-      {showModal && <AddMacroModal onClose={() => setShowModal(false)} />}
-      <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 10000,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-      }}>
-        <input
-          autoFocus
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter') runMacro(input.trim());
-            if (e.key === 'Escape') setVisible(false);
-          }}
-          placeholder="Type a macro..."
-          style={{
-            padding: '14px 16px',
-            fontSize: '18px',
-            width: '400px',
-            borderRadius: '12px',
-            border: '1px solid #888',
-            boxShadow: '0 0 8px rgba(0,0,0,0.1)',
-          }}
-        />
-        <button
-          onClick={() => setShowModal(true)}
-          title="Add Macro"
-          style={{
-            width: '48px',
-            height: '48px',
-            fontSize: '24px',
-            borderRadius: '50%',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-          }}
-        >
-          +
-        </button>
-      </div>
+      {isAddOpen && <AddMacroModal onClose={onAddClose} onMacroAdded={() => setVisible(false)} />}
+      {isSettingsOpen && <SettingsModal onClose={onSettingsClose} />}
+      {visible && (
+        <>
+          <Box
+            position="fixed"
+            top="0"
+            left="0"
+            width="150vw"
+            height="100vh"
+            bg="blackAlpha.500"
+            zIndex={1200}
+            pointerEvents="none"
+            padding={"3rem"}
+          />
+
+          <Box
+            position="fixed"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+            zIndex={1300}
+            bg="white"
+            p={4}
+            borderRadius="lg"
+            boxShadow="lg"
+          >
+            <HStack spacing={3}>
+              <Input
+                placeholder="Type a macro..."
+                size="lg"
+                width="400px"
+                value={input}
+                ref={inputRef}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') runMacro(input.trim());
+                  if (e.key === 'Escape') setVisible(false);
+                }}
+              />
+              <IconButton
+                aria-label="Add Macro"
+                icon={<AddIcon />}
+                colorScheme="blue"
+                size="lg"
+                borderRadius="full"
+                onClick={handleAddClick}
+              />
+              <IconButton
+                aria-label="Settings"
+                icon={<SettingsIcon />}
+                colorScheme="gray"
+                size="lg"
+                borderRadius="full"
+                onClick={handleSettingsClick}
+              />
+            </HStack>
+          </Box>
+        </>
+      )}
     </>
   );
 };

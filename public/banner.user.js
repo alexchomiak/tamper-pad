@@ -7,5 +7,6 @@
 // @match        *://*/*
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_addElement
 // ==/UserScript==
 
